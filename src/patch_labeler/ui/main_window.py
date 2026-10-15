@@ -1,5 +1,6 @@
 # ui/main_window.py
 
+import json
 from pathlib import Path
 
 from PySide6.QtCore import Qt
@@ -47,7 +48,14 @@ class MainWindow(QMainWindow):
         self.patch_manager = None
 
         if self.mode == "labeling":
-            self.data_manager = DataManager(self.labels_file, self.output_dir)
+            try:
+                self.data_manager = DataManager(self.labels_file, self.output_dir)
+            except (json.JSONDecodeError, OSError) as e:
+                QMessageBox.critical(
+                    self, "Ошибка чтения разметки",
+                    f"Не удалось загрузить labels.json:\n{e}"
+                )
+                return
             self.view_data = None
             title = "Patch Labeler — Разметка"
         else:
